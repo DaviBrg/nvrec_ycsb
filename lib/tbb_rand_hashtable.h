@@ -11,6 +11,7 @@
 #include "lib/string_hashtable.h"
 
 #include <vector>
+
 #include "tbb/concurrent_hash_map.h"
 #include "tbb/queuing_rw_mutex.h"
 #include "lib/string.h"
