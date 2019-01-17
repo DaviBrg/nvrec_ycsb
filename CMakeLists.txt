@@ -50,6 +50,7 @@ set(HEADERS
   db/basic_db.h
   db/lock_stl_db.h
   db/tbb_rand_db.h
+  db/nvmdb.h
 #  db/redis_db.h
 )
 
@@ -75,6 +76,7 @@ set(SOURCES
   db/hashtable_db.cc
 #  db/redis_db.cc
   db/db_factory.cc
+  db/nvmdb.cc
   ycsbc.cc
 )
 
