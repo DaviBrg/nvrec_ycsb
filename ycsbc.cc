@@ -39,7 +39,7 @@ int DelegateClient(ycsbc::DB *db, ycsbc::CoreWorkload *wl, const int num_ops,
   return oks;
 }
 
-int main(const int argc, const char *argv[]) {
+int main2(const int argc, const char *argv[]) {
   utils::Properties props;
   string file_name = ParseCommandLine(argc, argv, props);
 
@@ -179,3 +179,10 @@ inline bool StrStartWith(const char *str, const char *pre) {
   return strncmp(str, pre, strlen(pre)) == 0;
 }
 
+//#include "recovery/nvm_recovery.h"
+
+
+int main() {
+//    Tuple t = {10, "a1", "a1", "a1", "a1", "a1", "a1", "a1", "a1", "a1", "a1"};
+    return 0;
+}

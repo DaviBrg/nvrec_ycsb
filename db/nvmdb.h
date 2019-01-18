@@ -1,7 +1,7 @@
 #ifndef NVMDB_H
 #define NVMDB_H
 
-#include <unordered_map>
+#include <map>
 #include <mutex>
 
 #include "core/db.h"
@@ -9,10 +9,8 @@
 namespace ycsbc {
 
 class NVMDB : public DB {
-
-    using Table = std::unordered_map<std::string, std::vector<KVPair>>;
-
 public:
+    using Table = std::map<std::string, std::vector<KVPair>>;
     ///
     /// Reads a record from the database.
     /// Field/value pairs from the result are stored in a vector.
@@ -74,10 +72,10 @@ public:
     int Delete(const std::string &table, const std::string &key) = 0;
 
 private:
-    auto FindTableKey(const std::string &table, const std::string &key);
+    auto FindByTableKey(const std::string &table, const std::string &key);
     std::vector<KVPair> FilterByFields(const std::vector<KVPair> &values,
                                        const std::vector<std::string> &fields);
-    std::unordered_map<std::string, Table> tables_;
+    std::map<std::string, Table> tables_;
     std::mutex mutex_;
 
 };
