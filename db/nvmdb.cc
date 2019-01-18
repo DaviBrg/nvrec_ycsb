@@ -2,8 +2,6 @@
 
 #include <algorithm>
 
-#include "recovery/nvm_recovery.h"
-
 using namespace ycsbc;
 
 using Tables = std::map<std::string, NVMDB::Table>;

@@ -52,7 +52,7 @@ set(HEADERS
   db/tbb_rand_db.h
   db/nvmdb.h
 #  db/redis_db.h
-  recovery/nvm_recovery.h
+  recovery/recovery_engine.h
 )
 
 set(SOURCES
@@ -78,7 +78,7 @@ set(SOURCES
 #  db/redis_db.cc
   db/db_factory.cc
   db/nvmdb.cc
-  recovery/nvm_recovery.cc
+  recovery/recovery_engine.cc
   ycsbc.cc
 )
 

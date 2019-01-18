@@ -179,10 +179,8 @@ inline bool StrStartWith(const char *str, const char *pre) {
   return strncmp(str, pre, strlen(pre)) == 0;
 }
 
-//#include "recovery/nvm_recovery.h"
+#include "recovery/recovery_engine.h"
 
 
 int main() {
-//    Tuple t = {10, "a1", "a1", "a1", "a1", "a1", "a1", "a1", "a1", "a1", "a1"};
-    return 0;
 }
