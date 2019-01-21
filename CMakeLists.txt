@@ -53,6 +53,9 @@ set(HEADERS
   db/nvmdb.h
 #  db/redis_db.h
   recovery/recovery_engine.h
+  recovery/nvrec_engine.h
+  recovery/recovery_defs.h
+  recovery/persistent_list.h
 )
 
 set(SOURCES
@@ -79,12 +82,15 @@ set(SOURCES
   db/db_factory.cc
   db/nvmdb.cc
   recovery/recovery_engine.cc
+  recovery/nvrec_engine.cc
+  recovery/recovery_defs.cc
+  recovery/persistent_list.cc
   ycsbc.cc
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-target_link_libraries(${PROJECT_NAME} -lpthread -ltbb)
+target_link_libraries(${PROJECT_NAME} -lpthread -ltbb -lpmemobj -lpmemlog)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
