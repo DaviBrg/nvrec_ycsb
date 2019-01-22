@@ -2,17 +2,36 @@
 
 #include <libpmemobj++/make_persistent.hpp>
 #include <libpmemobj++/transaction.hpp>
+#include <experimental/filesystem>
 
-std::unique_ptr<PersistentList> PersistentList::MakePersistentList(
+
+namespace fs = std::experimental::filesystem;
+
+
+PersistentList::PersistentList() {}
+
+pmem::obj::pool<PersistentList> PersistentList::MakePersistentListPool(
         const std::string &pool_path,
-        size_t pool_size, const std::string &layout_name) {
-    auto ptr = std::unique_ptr<PersistentList>(new PersistentList());
-    return ptr;
+        size_t pool_size, const std::string &layout) {
+        pmem::obj::pool<PersistentList> pool;
+    if (fs::exists(pool_path)) {
+        pool =
+                pmem::obj::pool<PersistentList>::open(pool_path.c_str(),
+                                                      layout.c_str());
+
+    } else {
+        pool =
+                pmem::obj::pool<PersistentList>::create(
+                    pool_path.c_str(), layout.c_str(), pool_size,
+                    S_IWUSR | S_IRUSR);
+    }
+    return pool;
 }
 
-void PersistentList::Persist(const Tuple &value, std::unordered_map<uint64_t,
+void PersistentList::Persist(pmem::obj::pool<PersistentList> &pool,
+                             const Tuple &value, std::unordered_map<uint64_t,
                              pmem::obj::persistent_ptr<ListNode> > &lookup_table) {
-    pmem::obj::transaction::exec_tx(pool_, [&](){
+    pmem::obj::transaction::exec_tx(pool, [&](){
         auto it = lookup_table.find(value.key);
         if (std::end(lookup_table) == it) {
             auto ptr = AddNewEntry(value);
@@ -34,6 +53,7 @@ void PersistentList::Recover(
         lookup_table.insert({current->key.get_ro(), current});
         current = current->next;
     }
+
 }
 
 pmem::obj::persistent_ptr<ListNode> PersistentList::AddNewEntry(
@@ -49,6 +69,5 @@ pmem::obj::persistent_ptr<ListNode> PersistentList::AddNewEntry(
         head_->prev = entry_node;
         head_ = entry_node;
     }
-
     return entry_node;
 }

@@ -20,22 +20,21 @@ struct ListNode {
 
 class PersistentList {
 public:
-    static std::unique_ptr<PersistentList> MakePersistentList(
+    static pmem::obj::pool<PersistentList> MakePersistentListPool(
             const std::string &pool_path, size_t pool_size,
-            const std::string &layout_name);
-    void Persist(
-            const Tuple &value,std::unordered_map<uint64_t,
+            const std::string &layout);
+    void Persist(pmem::obj::pool<PersistentList> &pool,
+            const Tuple &value, std::unordered_map<uint64_t,
             pmem::obj::persistent_ptr<ListNode>> &lookup_table);
     void Recover(std::map<std::string, Table> &tables,
                  std::unordered_map<uint64_t,
                  pmem::obj::persistent_ptr<ListNode>> &lookup_table);
 private:
-    PersistentList(){}
-    pmem::obj::persistent_ptr<ListNode> AddNewEntry(const Tuple &entry);
+    PersistentList();
 
+    pmem::obj::persistent_ptr<ListNode> AddNewEntry(const Tuple &entry);
     pmem::obj::persistent_ptr<ListNode> head_;
     pmem::obj::persistent_ptr<ListNode> tail_;
-    pmem::obj::pool_base pool_;
 };
 
 

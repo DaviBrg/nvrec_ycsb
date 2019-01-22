@@ -90,7 +90,7 @@ set(SOURCES
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-target_link_libraries(${PROJECT_NAME} -lpthread -ltbb -lpmemobj -lpmemlog)
+target_link_libraries(${PROJECT_NAME} -lpthread -ltbb -lpmemobj -lpmemlog -lstdc++fs)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
