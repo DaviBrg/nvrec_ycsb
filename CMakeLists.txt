@@ -52,7 +52,6 @@ set(HEADERS
   db/tbb_rand_db.h
   db/nvmdb.h
 #  db/redis_db.h
-  recovery/recovery_engine.h
   recovery/nvrec_engine.h
   recovery/recovery_defs.h
   recovery/persistent_list.h
@@ -81,7 +80,6 @@ set(SOURCES
 #  db/redis_db.cc
   db/db_factory.cc
   db/nvmdb.cc
-  recovery/recovery_engine.cc
   recovery/nvrec_engine.cc
   recovery/recovery_defs.cc
   recovery/persistent_list.cc

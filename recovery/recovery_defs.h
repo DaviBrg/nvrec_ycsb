@@ -16,6 +16,7 @@ enum RecoveryStatus {
 
 constexpr size_t kFieldSize = 100;
 constexpr size_t kNumOfFields = 10;
+const std::string kDefautFieldName = "field";
 const std::string kDefautTableName = "useratble";
 
 struct Field {

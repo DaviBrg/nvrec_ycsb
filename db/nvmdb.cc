@@ -74,12 +74,22 @@ int NVMDB::Update(const std::string &table, const std::string &key,
             stored_values.emplace_back(value);
         }
     }
+    if (rec_engine_.PersistUpdate(std::stoul(key), values) == kSuccess) {
+        return kOK;
+    } else {
+        return kErrorConflict;
+    }
 }
 
 int NVMDB::Insert(const std::string &table, const std::string &key,
                   std::vector<DB::KVPair> &values) {
     std::lock_guard lk{mutex_};
     tables_[table][key] = values;
+    if (rec_engine_.PersistUpdate(std::stoul(key), values) == kSuccess) {
+        return kOK;
+    } else {
+        return kErrorConflict;
+    }
 }
 
 int NVMDB::Delete(const std::string &table, const std::string &key) {
@@ -89,6 +99,11 @@ int NVMDB::Delete(const std::string &table, const std::string &key) {
         return kErrorNoData;
     }
     table_it->second.erase(key_it);
+    if (rec_engine_.PersistDelete(std::stoul(key)) == kSuccess) {
+        return kOK;
+    } else {
+        return kErrorConflict;
+    }
 }
 
 std::vector<DB::KVPair> NVMDB::FilterByFields(
@@ -104,6 +119,7 @@ std::vector<DB::KVPair> NVMDB::FilterByFields(
             result.emplace_back(value);
         }
     }
+
     return result;
 }
 

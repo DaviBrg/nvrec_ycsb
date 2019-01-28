@@ -6,6 +6,8 @@
 
 #include "core/db.h"
 
+#include "recovery/nvrec_engine.h"
+
 namespace ycsbc {
 
 class NVMDB : public DB {
@@ -23,7 +25,7 @@ public:
 
     int Read(const std::string &table, const std::string &key,
                      const std::vector<std::string> *fields,
-                     std::vector<KVPair> &result) = 0;
+                     std::vector<KVPair> &result);
     ///
     /// Performs a range scan for a set of records in the database.
     /// Field/value pairs from the result are stored in a vector.
@@ -38,7 +40,7 @@ public:
     ///
     int Scan(const std::string &table, const std::string &key,
                      int record_count, const std::vector<std::string> *fields,
-                     std::vector<std::vector<KVPair>> &result) = 0;
+                     std::vector<std::vector<KVPair>> &result);
     ///
     /// Updates a record in the database.
     /// Field/value pairs in the specified vector are written to the record,
@@ -50,7 +52,7 @@ public:
     /// @return Zero on success, a non-zero error code on error.
     ///
     int Update(const std::string &table, const std::string &key,
-                       std::vector<KVPair> &values) = 0;
+                       std::vector<KVPair> &values);
     ///
     /// Inserts a record into the database.
     /// Field/value pairs in the specified vector are written into the record.
@@ -61,7 +63,7 @@ public:
     /// @return Zero on success, a non-zero error code on error.
     ///
     int Insert(const std::string &table, const std::string &key,
-                       std::vector<KVPair> &values) = 0;
+                       std::vector<KVPair> &values);
     ///
     /// Deletes a record from the database.
     ///
@@ -69,7 +71,7 @@ public:
     /// @param key The key of the record to delete.
     /// @return Zero on success, a non-zero error code on error.
     ///
-    int Delete(const std::string &table, const std::string &key) = 0;
+    int Delete(const std::string &table, const std::string &key);
 
 private:
     auto FindByTableKey(const std::string &table, const std::string &key);
@@ -77,6 +79,7 @@ private:
                                        const std::vector<std::string> &fields);
     std::map<std::string, Table> tables_;
     std::mutex mutex_;
+    NVRecEngine rec_engine_;
 
 };
 

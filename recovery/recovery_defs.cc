@@ -27,7 +27,14 @@ std::vector<KVPair> RawToDB(const Tuple &tuple) {
 Tuple DBToRaw(const std::vector<KVPair> &values) {
     Tuple tuple;
     for (const auto &value : values) {
-        size_t i = std::stoi(value.first.substr(value.first.size() - 1, 1));
+        auto sz1 = kDefautFieldName.size();
+        auto sz2 = value.first.size() - kDefautFieldName.size();
+        auto substr = value.first.substr(kDefautFieldName.size(),
+                                         value.first.size() -
+                                         kDefautFieldName.size());
+        size_t i = std::stoi(value.first.substr(kDefautFieldName.size(),
+                                                value.first.size() -
+                                                kDefautFieldName.size()));
         assert((i < kNumOfFields) && (value.second.size() < kFieldSize));
         std::strncpy(tuple.fields[i].str,
                      value.second.c_str(), value.second.size());
