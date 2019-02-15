@@ -35,7 +35,7 @@ Tuple DBToRaw(const std::vector<KVPair> &values) {
         size_t i = std::stoi(value.first.substr(kDefautFieldName.size(),
                                                 value.first.size() -
                                                 kDefautFieldName.size()));
-        assert((i < kNumOfFields) && (value.second.size() < kFieldSize));
+        assert((i < kNumOfFields) && (value.second.size() <= kFieldSize));
         std::strncpy(tuple.fields[i].str,
                      value.second.c_str(), value.second.size());
     }

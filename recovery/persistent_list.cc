@@ -4,6 +4,8 @@
 #include <libpmemobj++/transaction.hpp>
 #include <experimental/filesystem>
 
+const std::string kFileName = "log_file.txt";
+
 
 namespace fs = std::experimental::filesystem;
 
@@ -31,16 +33,20 @@ pmem::obj::pool<PersistentList> PersistentList::MakePersistentListPool(
 void PersistentList::Persist(pmem::obj::pool<PersistentList> &pool,
                              const Tuple &value, std::unordered_map<uint64_t,
                              pmem::obj::persistent_ptr<ListNode> > &lookup_table) {
-    pmem::obj::transaction::exec_tx(pool, [&](){
-        auto it = lookup_table.find(value.key);
-        if (std::end(lookup_table) == it) {
-            auto ptr = AddNewEntry(value);
-            lookup_table[value.key] = ptr;
-        } else {
-            it->second->obj = value;
-        }
-    });
-
+    try {
+        pmem::obj::transaction::exec_tx(pool, [&](){
+            auto it = lookup_table.find(value.key);
+            if (std::end(lookup_table) == it) {
+                auto ptr = AddNewEntry(value);
+                lookup_table[value.key] = ptr;
+            } else {
+                it->second->obj = value;
+            }
+        });
+    } catch (const std::exception &e) {
+        Dump();
+        Persist(pool, value, lookup_table);
+    }
 }
 
 void PersistentList::Recover(
@@ -53,7 +59,21 @@ void PersistentList::Recover(
         lookup_table.insert({current->key.get_ro(), current});
         current = current->next;
     }
+}
 
+void PersistentList::Dump() {
+    auto current = head_;
+    decltype(current) prev = nullptr;
+    out_dump_file_.open(kFileName,std::ios::app | std::ios::binary);
+    assert(out_dump_file_.is_open());
+    while (current != tail_) {
+        Tuple current_tuple = current->obj.get_ro();
+        out_dump_file_.write(reinterpret_cast<char*>(&current_tuple),
+                             sizeof(current_tuple));
+        prev = current;
+        current = current->next;
+    }
+    out_dump_file_.flush();
 }
 
 pmem::obj::persistent_ptr<ListNode> PersistentList::AddNewEntry(

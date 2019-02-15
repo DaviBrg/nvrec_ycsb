@@ -180,28 +180,43 @@ inline bool StrStartWith(const char *str, const char *pre) {
 }
 
 #include "db/nvmdb.h"
+#include <chrono>
 
+int main(const int argc, const char *argv[]) {
+//    ycsbc::NVMDB db;
+//    auto before = chrono::high_resolution_clock::now();
+//    std::vector<KVPair> values = {{kDefautFieldName + "0", "value0"},
+//                                  {kDefautFieldName + "1", "value1"},
+//                                  {kDefautFieldName + "2", "value2"},
+//                                  {kDefautFieldName + "3", "value3"},
+//                                  {kDefautFieldName + "4", "value4"},
+//                                  {kDefautFieldName + "5", "value5"},
+//                                  {kDefautFieldName + "6", "value6"},
+//                                  {kDefautFieldName + "7", "value7"},
+//                                  {kDefautFieldName + "8", "value8"},
+//                                  {kDefautFieldName + "9", "value9"},};
+//    uint64_t i = 0;
 
-int main() {
-    ycsbc::NVMDB db;
-    std::vector<KVPair> values = {{kDefautFieldName + "0", "value0"},
-                                  {kDefautFieldName + "1", "value1"},
-                                  {kDefautFieldName + "2", "value2"},
-                                  {kDefautFieldName + "3", "value3"},
-                                  {kDefautFieldName + "4", "value4"},
-                                  {kDefautFieldName + "5", "value5"},
-                                  {kDefautFieldName + "6", "value6"},
-                                  {kDefautFieldName + "7", "value7"},
-                                  {kDefautFieldName + "8", "value8"},
-                                  {kDefautFieldName + "9", "value9"},};
-    for (uint64_t i = 0; i < 10; i++) {
-        std::cout << "Result: " << db.Insert(kDefautTableName,
-                                             std::to_string(i), values) << "\n";
-        std::vector<KVPair> values = {{kDefautFieldName + "0", "changed value"}};
-        db.Update(kDefautTableName, std::to_string(i), values);
-        if (i > 8) {
-            db.Delete(kDefautTableName, "5");
-        }
-    }
-    return 0;
+//    try {
+//        for (i = 0; i < 4000000000; i++) {
+//            db.Insert(kDefautTableName, std::to_string(i), values);
+//        }
+//    } catch(const std::exception &e) {
+//        auto after = chrono::high_resolution_clock::now();
+//        cout << "ERROR: " << e.what() << "\ni: " << i << "\n";
+//        cout << "duration: " << std::chrono::duration_cast<std::chrono::seconds>(after - before).count() << "s\n";
+//    }
+
+    int result = 0;
+    uint64_t i = 0;
+    auto before = chrono::high_resolution_clock::now();
+
+//    try {
+        result = main2(argc, argv);
+//    } catch(const std::exception &e) {
+//            auto after = chrono::high_resolution_clock::now();
+//            cout << "ERROR: " << e.what() << "\ni: " << i << "\n";
+//            cout << "duration: " << std::chrono::duration_cast<std::chrono::seconds>(after - before).count() << "s\n";
+//    }
+    return result;
 }

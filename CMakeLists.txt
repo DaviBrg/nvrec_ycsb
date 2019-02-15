@@ -19,24 +19,6 @@ set(HEADERS
   core/const_generator.h
   core/db.h
   core/discrete_generator.h
-#  redis/redis_client.h
-#  redis/hiredis/read.h
-#  redis/hiredis/sds.h
-#  redis/hiredis/adapters/glib.h
-#  redis/hiredis/adapters/libuv.h
-#  redis/hiredis/adapters/qt.h
-#  redis/hiredis/adapters/libev.h
-#  redis/hiredis/adapters/ae.h
-#  redis/hiredis/adapters/libevent.h
-#  redis/hiredis/adapters/ivykis.h
-#  redis/hiredis/adapters/macosx.h
-#  redis/hiredis/dict.h
-#  redis/hiredis/net.h
-#  redis/hiredis/fmacros.h
-#  redis/hiredis/examples/example-qt.h
-#  redis/hiredis/hiredis.h
-#  redis/hiredis/async.h
-#  redis/hiredis/win32.h
   lib/stl_hashtable.h
   lib/mem_alloc.h
   lib/tbb_rand_hashtable.h
@@ -51,7 +33,6 @@ set(HEADERS
   db/lock_stl_db.h
   db/tbb_rand_db.h
   db/nvmdb.h
-#  db/redis_db.h
   recovery/nvrec_engine.h
   recovery/recovery_defs.h
   recovery/persistent_list.h
@@ -59,25 +40,7 @@ set(HEADERS
 
 set(SOURCES
   core/core_workload.cc
-#  redis/hiredis/dict.c
-#  redis/hiredis/net.c
-#  redis/hiredis/test.c
-#  redis/hiredis/examples/example-libuv.c
-#  redis/hiredis/examples/example-macosx.c
-#  redis/hiredis/examples/example-libev.c
-#  redis/hiredis/examples/example-glib.c
-#  redis/hiredis/examples/example-libevent.c
-#  redis/hiredis/examples/example-qt.cpp
-#  redis/hiredis/examples/example-ivykis.c
-#  redis/hiredis/examples/example-ae.c
-#  redis/hiredis/examples/example.c
-#  redis/hiredis/read.c
-#  redis/hiredis/hiredis.c
-#  redis/hiredis/async.c
-#  redis/hiredis/sds.c
-#  redis/sample.cc
   db/hashtable_db.cc
-#  db/redis_db.cc
   db/db_factory.cc
   db/nvmdb.cc
   recovery/nvrec_engine.cc
@@ -89,6 +52,12 @@ set(SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 target_link_libraries(${PROJECT_NAME} -lpthread -ltbb -lpmemobj -lpmemlog -lstdc++fs)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+  COMMAND "${CMAKE_COMMAND}" -E copy
+     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}
+     ${PROJECT_SOURCE_DIR}
+  COMMENT "Copying to output directory")
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
