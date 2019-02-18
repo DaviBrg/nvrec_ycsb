@@ -5,7 +5,7 @@
 
 std::string kPoolPath = "/mnt/mem/pmem";
 std::string kLayout = "linked_list";
-size_t kPoolSize = 3'800'000'000;
+size_t kPoolSize = 500000000;
 
 
 NVRecEngine::NVRecEngine() :

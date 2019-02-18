@@ -3,6 +3,11 @@
 #include <libpmemobj++/make_persistent.hpp>
 #include <libpmemobj++/transaction.hpp>
 #include <experimental/filesystem>
+#include <chrono>
+
+#include <iostream>
+
+int my_counter = 0;
 
 const std::string kFileName = "log_file.txt";
 
@@ -33,6 +38,7 @@ pmem::obj::pool<PersistentList> PersistentList::MakePersistentListPool(
 void PersistentList::Persist(pmem::obj::pool<PersistentList> &pool,
                              const Tuple &value, std::unordered_map<uint64_t,
                              pmem::obj::persistent_ptr<ListNode> > &lookup_table) {
+//    std::cerr << "counter: " << my_counter++ << std::endl;
     try {
         pmem::obj::transaction::exec_tx(pool, [&](){
             auto it = lookup_table.find(value.key);
@@ -44,7 +50,9 @@ void PersistentList::Persist(pmem::obj::pool<PersistentList> &pool,
             }
         });
     } catch (const std::exception &e) {
-        Dump();
+        std::cerr << "Dump triggered" << std::endl;
+        Dump(pool, lookup_table);
+        std::cerr << "Dump finished" << std::endl;
         Persist(pool, value, lookup_table);
     }
 }
@@ -61,19 +69,40 @@ void PersistentList::Recover(
     }
 }
 
-void PersistentList::Dump() {
+void PersistentList::Dump(pmem::obj::pool<PersistentList> &pool,
+                          std::unordered_map<uint64_t,
+                          pmem::obj::persistent_ptr<ListNode> > &lookup_table) {
+    auto before = std::chrono::high_resolution_clock::now();
     auto current = head_;
-    decltype(current) prev = nullptr;
-    out_dump_file_.open(kFileName,std::ios::app | std::ios::binary);
+    std::ofstream out_dump_file_(kFileName.c_str(),
+                                std::ios::app | std::ios::binary);
     assert(out_dump_file_.is_open());
-    while (current != tail_) {
+    int counter = 0;
+    while (current != nullptr) {
         Tuple current_tuple = current->obj.get_ro();
         out_dump_file_.write(reinterpret_cast<char*>(&current_tuple),
                              sizeof(current_tuple));
-        prev = current;
         current = current->next;
     }
     out_dump_file_.flush();
+    auto prev = current = head_;
+    counter = 0;
+
+    while (current != nullptr) {
+        prev = current;
+        current = current->next;
+        pmem::obj::transaction::exec_tx(pool, [&](){
+            pmem::obj::delete_persistent<ListNode>(prev);
+        });
+    }
+    pmem::obj::transaction::exec_tx(pool, [&](){
+        head_ = tail_ = nullptr;
+    });
+    lookup_table.clear();
+    auto after = std::chrono::high_resolution_clock::now();
+    std::cerr << "Dump duration: " <<
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                after - before).count() << std::endl;
 }
 
 pmem::obj::persistent_ptr<ListNode> PersistentList::AddNewEntry(

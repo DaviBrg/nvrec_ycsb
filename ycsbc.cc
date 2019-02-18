@@ -218,5 +218,9 @@ int main(const int argc, const char *argv[]) {
 //            cout << "ERROR: " << e.what() << "\ni: " << i << "\n";
 //            cout << "duration: " << std::chrono::duration_cast<std::chrono::seconds>(after - before).count() << "s\n";
 //    }
+        auto after = chrono::high_resolution_clock::now();
+        cout << "total duration: " <<
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    after - before).count() << std::endl;
     return result;
 }

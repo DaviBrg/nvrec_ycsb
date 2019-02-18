@@ -30,14 +30,14 @@ public:
     void Recover(std::map<std::string, Table> &tables,
                  std::unordered_map<uint64_t,
                  pmem::obj::persistent_ptr<ListNode>> &lookup_table);
-    void Dump();
+    void Dump(pmem::obj::pool<PersistentList> &pool, std::unordered_map<uint64_t,
+              pmem::obj::persistent_ptr<ListNode>> &lookup_table);
 private:
     PersistentList();
 
     pmem::obj::persistent_ptr<ListNode> AddNewEntry(const Tuple &entry);
     pmem::obj::persistent_ptr<ListNode> head_;
     pmem::obj::persistent_ptr<ListNode> tail_;
-    std::ofstream out_dump_file_;
     std::ifstream in_dump_file_;
     std::string pool_path_;
 };
