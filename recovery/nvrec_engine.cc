@@ -30,6 +30,7 @@ RecoveryStatus NVRecEngine::PersistUpdate(uint64_t key,
 RecoveryStatus NVRecEngine::PersistDelete(uint64_t key) {
     Tuple tuple;
     tuple.deleted = true;
+    tuple.key = key;
     list_->Persist(pool_, tuple, lookup_table_);
     return kSuccess;
 }

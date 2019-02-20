@@ -2,11 +2,14 @@
 #define RECOVERY_NVREC_ENGINE_H
 
 #include "recovery/persistent_list.h"
+#include "recovery/recovery_engine.h"
 
-class NVRecEngine {
+class NVRecEngine : public RecoveryEngine {
 public:
     NVRecEngine();
     ~NVRecEngine();
+    NVRecEngine(NVRecEngine &&) = default;
+    NVRecEngine& operator=(NVRecEngine &&) = default;
     RecoveryStatus PersistUpdate(uint64_t key,
                                  const std::vector<KVPair>& values);
     RecoveryStatus PersistDelete(uint64_t key);

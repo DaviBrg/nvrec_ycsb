@@ -2,9 +2,31 @@
 
 #include <algorithm>
 
+#include "recovery/nvmblk_engine.h"
+#include "recovery/nvmlog_engine.h"
+#include "recovery/nvrec_engine.h"
+
 using namespace ycsbc;
 
 using Tables = std::map<std::string, NVMDB::Table>;
+
+NVMDB::NVMDB(kNVMDBType type) {
+    switch (type) {
+    case kNVMBlk:
+        rec_engine_= NVMBlkEngine::BuildEngine();
+        break;
+    case kNVMLog:
+        rec_engine_= NVMLogEngine::BuildEngine();
+        break;
+    case kNVMRec:
+        rec_engine_= std::make_unique<NVRecEngine>();
+        break;
+    default:
+        throw std::runtime_error("Unknown NVM database");
+        break;
+    }
+    if (nullptr == rec_engine_) throw std::runtime_error("NVMDB intance error");
+}
 
 auto NVMDB::FindByTableKey(const std::string &table, const std::string &key) {
     auto table_it = tables_.find(table);
@@ -18,6 +40,7 @@ auto NVMDB::FindByTableKey(const std::string &table, const std::string &key) {
     }
     return std::make_tuple(true, table_it, key_it);
 }
+
 
 int NVMDB::Read(const std::string &table, const std::string &key,
                 const std::vector<std::string> *fields,
@@ -74,7 +97,7 @@ int NVMDB::Update(const std::string &table, const std::string &key,
             stored_values.emplace_back(value);
         }
     }
-    if (rec_engine_.PersistUpdate(std::stoul(key), values) == kSuccess) {
+    if (rec_engine_->PersistUpdate(std::stoul(key), values) == kSuccess) {
         return kOK;
     } else {
         return kErrorConflict;
@@ -85,7 +108,7 @@ int NVMDB::Insert(const std::string &table, const std::string &key,
                   std::vector<DB::KVPair> &values) {
     std::lock_guard lk{mutex_};
     tables_[table][key] = values;
-    if (rec_engine_.PersistUpdate(std::stoul(key), values) == kSuccess) {
+    if (rec_engine_->PersistUpdate(std::stoul(key), values) == kSuccess) {
         return kOK;
     } else {
         return kErrorConflict;
@@ -99,7 +122,7 @@ int NVMDB::Delete(const std::string &table, const std::string &key) {
         return kErrorNoData;
     }
     table_it->second.erase(key_it);
-    if (rec_engine_.PersistDelete(std::stoul(key)) == kSuccess) {
+    if (rec_engine_->PersistDelete(std::stoul(key)) == kSuccess) {
         return kOK;
     } else {
         return kErrorConflict;

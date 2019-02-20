@@ -33,8 +33,12 @@ DB* DBFactory::CreateDB(utils::Properties &props) {
     return new TbbRandDB;
   } else if (props["dbname"] == "tbb_scan") {
     return new TbbScanDB;
-  } else if (props["dbname"] == "nvmdb") {
-    return new NVMDB;
+  } else if (props["dbname"] == "nvmrec") {
+return new NVMDB(kNVMRec);
+  } else if (props["dbname"] == "nvmlog") {
+return new NVMDB(kNVMRec);
+  } else if (props["dbname"] == "nvmblk") {
+return new NVMDB(kNVMRec);
   } else return NULL;
 }
 

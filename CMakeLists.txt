@@ -33,9 +33,12 @@ set(HEADERS
   db/lock_stl_db.h
   db/tbb_rand_db.h
   db/nvmdb.h
+  recovery/recovery_engine.h
   recovery/nvrec_engine.h
   recovery/recovery_defs.h
   recovery/persistent_list.h
+  recovery/nvmlog_engine.h
+  recovery/nvmblk_engine.h
 )
 
 set(SOURCES
@@ -46,12 +49,14 @@ set(SOURCES
   recovery/nvrec_engine.cc
   recovery/recovery_defs.cc
   recovery/persistent_list.cc
+  recovery/nvmlog_engine.cc
+  recovery/nvmblk_engine.cc
   ycsbc.cc
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-target_link_libraries(${PROJECT_NAME} -lpthread -ltbb -lpmemobj -lpmemlog -lstdc++fs)
+target_link_libraries(${PROJECT_NAME} -lpthread -ltbb -lpmemobj -lpmemlog -lpmemblk -lstdc++fs)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
   COMMAND "${CMAKE_COMMAND}" -E copy

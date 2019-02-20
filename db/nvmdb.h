@@ -2,16 +2,23 @@
 #define NVMDB_H
 
 #include <map>
+#include <memory>
 #include <mutex>
 
 #include "core/db.h"
-
 #include "recovery/nvrec_engine.h"
 
 namespace ycsbc {
 
+enum kNVMDBType {
+    kNVMBlk,
+    kNVMLog,
+    kNVMRec
+};
+
 class NVMDB : public DB {
 public:
+    NVMDB(kNVMDBType type);
     using Table = std::map<std::string, std::vector<KVPair>>;
     ///
     /// Reads a record from the database.
@@ -79,7 +86,7 @@ private:
                                        const std::vector<std::string> &fields);
     std::map<std::string, Table> tables_;
     std::mutex mutex_;
-    NVRecEngine rec_engine_;
+    std::unique_ptr<RecoveryEngine> rec_engine_ = nullptr;
 
 };
 
