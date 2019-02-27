@@ -1,9 +1,12 @@
 #include "recovery/nvmblk_engine.h"
 
 #include <fstream>
+#include <chrono>
+#include <iostream>
 
-constexpr const char * const kLogPath = "/mnt/mem/pmem_blk";
-constexpr size_t kPoolSize = 500000000;
+constexpr const char * const kPMEMLogPath = "/mnt/mem/pmem_blk";
+constexpr const char * const kDiskLogPath = "disk_log.txt";
+constexpr size_t kPoolSize = 200000000;
 
 NVMBlkEngine::NVMBlkEngine(PMEMblkpool *blk_pool, size_t max_num_blocks) :
     blk_pool_(blk_pool),
@@ -17,10 +20,10 @@ NVMBlkEngine::~NVMBlkEngine() {
 
 std::unique_ptr<RecoveryEngine> NVMBlkEngine::BuildEngine() {
 
-    auto blk_pool = pmemblk_create(kLogPath, sizeof(Tuple), kPoolSize, 0666);
+    auto blk_pool = pmemblk_create(kPMEMLogPath, sizeof(Tuple), kPoolSize, 0666);
 
     if (nullptr == blk_pool) {
-        blk_pool = pmemblk_open(kLogPath, sizeof(Tuple));
+        blk_pool = pmemblk_open(kPMEMLogPath, sizeof(Tuple));
     }
 
     if (nullptr == blk_pool) {
@@ -81,7 +84,11 @@ RecoveryStatus NVMBlkEngine::UpdateTuple(const Tuple &tuple) {
 }
 
 void NVMBlkEngine::FlushToDisk(){
-    std::ofstream disk_flush_file{kLogPath, std::ios::app | std::ios::binary};
+    auto before = std::chrono::high_resolution_clock::now();
+    std::ofstream disk_flush_file{kDiskLogPath, std::ios::app | std::ios::binary};
+    if (!disk_flush_file.is_open()) {
+        throw std::runtime_error("ERROR: Could not open file");
+    }
     Tuple current;
     for (size_t block_idx = 0; block_idx < max_num_blocks_; ++block_idx) {
         if (pmemblk_read(blk_pool_,
@@ -93,6 +100,10 @@ void NVMBlkEngine::FlushToDisk(){
     disk_flush_file.flush();
     lookup_table_.clear();
     next_block_ = 0;
+    auto after = std::chrono::high_resolution_clock::now();
+    std::cerr << "Flush duration: " <<
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                     after - before).count() << std::endl;
 }
 
 RecoveryStatus NVMBlkEngine::Recover(std::map<std::__cxx11::string,

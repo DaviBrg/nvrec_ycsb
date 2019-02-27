@@ -38,7 +38,6 @@ pmem::obj::pool<PersistentList> PersistentList::MakePersistentListPool(
 void PersistentList::Persist(pmem::obj::pool<PersistentList> &pool,
                              const Tuple &value, std::unordered_map<uint64_t,
                              pmem::obj::persistent_ptr<ListNode> > &lookup_table) {
-//    std::cerr << "counter: " << my_counter++ << std::endl;
     try {
         pmem::obj::transaction::exec_tx(pool, [&](){
             auto it = lookup_table.find(value.key);
@@ -50,9 +49,9 @@ void PersistentList::Persist(pmem::obj::pool<PersistentList> &pool,
             }
         });
     } catch (const std::exception &e) {
-        std::cerr << "Dump triggered" << std::endl;
+        std::cerr << "Flush triggered" << std::endl;
         Dump(pool, lookup_table);
-        std::cerr << "Dump finished" << std::endl;
+        std::cerr << "Flush finished" << std::endl;
         Persist(pool, value, lookup_table);
     }
 }
@@ -100,9 +99,9 @@ void PersistentList::Dump(pmem::obj::pool<PersistentList> &pool,
     });
     lookup_table.clear();
     auto after = std::chrono::high_resolution_clock::now();
-    std::cerr << "Dump duration: " <<
+    std::cerr << "Flush duration: " <<
             std::chrono::duration_cast<std::chrono::milliseconds>(
-                after - before).count() << std::endl;
+                     after - before).count() << std::endl;
 }
 
 pmem::obj::persistent_ptr<ListNode> PersistentList::AddNewEntry(

@@ -16,6 +16,7 @@
 #include "core/client.h"
 #include "core/core_workload.h"
 #include "db/db_factory.h"
+#include <mutex>
 
 using namespace std;
 
@@ -179,48 +180,23 @@ inline bool StrStartWith(const char *str, const char *pre) {
   return strncmp(str, pre, strlen(pre)) == 0;
 }
 
-#include "db/nvmdb.h"
 #include <chrono>
 
 int main(const int argc, const char *argv[]) {
-//    ycsbc::NVMDB db;
-//    auto before = chrono::high_resolution_clock::now();
-//    std::vector<KVPair> values = {{kDefautFieldName + "0", "value0"},
-//                                  {kDefautFieldName + "1", "value1"},
-//                                  {kDefautFieldName + "2", "value2"},
-//                                  {kDefautFieldName + "3", "value3"},
-//                                  {kDefautFieldName + "4", "value4"},
-//                                  {kDefautFieldName + "5", "value5"},
-//                                  {kDefautFieldName + "6", "value6"},
-//                                  {kDefautFieldName + "7", "value7"},
-//                                  {kDefautFieldName + "8", "value8"},
-//                                  {kDefautFieldName + "9", "value9"},};
-//    uint64_t i = 0;
-
-//    try {
-//        for (i = 0; i < 4000000000; i++) {
-//            db.Insert(kDefautTableName, std::to_string(i), values);
-//        }
-//    } catch(const std::exception &e) {
-//        auto after = chrono::high_resolution_clock::now();
-//        cout << "ERROR: " << e.what() << "\ni: " << i << "\n";
-//        cout << "duration: " << std::chrono::duration_cast<std::chrono::seconds>(after - before).count() << "s\n";
-//    }
-
     int result = 0;
     uint64_t i = 0;
     auto before = chrono::high_resolution_clock::now();
+    result = main2(argc, argv);
 
-//    try {
-        result = main2(argc, argv);
-//    } catch(const std::exception &e) {
-//            auto after = chrono::high_resolution_clock::now();
-//            cout << "ERROR: " << e.what() << "\ni: " << i << "\n";
-//            cout << "duration: " << std::chrono::duration_cast<std::chrono::seconds>(after - before).count() << "s\n";
-//    }
+    std::mutex mutex;
+
+    {
+        std::lock_guard lk{mutex};
         auto after = chrono::high_resolution_clock::now();
-        cout << "total duration: " <<
+        cout << "Total experiment duration: " <<
                 std::chrono::duration_cast<std::chrono::milliseconds>(
                     after - before).count() << std::endl;
+
+    }
     return result;
 }

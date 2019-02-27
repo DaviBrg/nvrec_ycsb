@@ -1,9 +1,12 @@
 #include "recovery/nvmlog_engine.h"
 
 #include <fstream>
+#include <chrono>
+#include <iostream>
 
-constexpr const char * const kLogPath = "/mnt/mem/pmem_log";
-constexpr size_t kLogSize = 500000000;
+constexpr const char * const kPMEMLogPath = "/mnt/mem/pmem_log";
+constexpr const char * const kDiskLogPath = "disk_log.txt";
+constexpr size_t kLogSize = 200000000;
 
 NVMLogEngine::NVMLogEngine(PMEMlogpool *log_pool, size_t available_bytes) :
     log_pool_(log_pool),
@@ -34,10 +37,10 @@ NVMLogEngine &NVMLogEngine::operator=(NVMLogEngine &&other) noexcept {
 }
 
 std::unique_ptr<NVMLogEngine> NVMLogEngine::BuildEngine() {
-    auto log_pool = pmemlog_create(kLogPath, kLogSize, 0666);
+    auto log_pool = pmemlog_create(kPMEMLogPath, kLogSize, 0666);
 
     if (nullptr == log_pool) {
-        log_pool = pmemlog_open(kLogPath);
+        log_pool = pmemlog_open(kPMEMLogPath);
     }
 
     if (nullptr == log_pool) {
@@ -65,7 +68,9 @@ RecoveryStatus NVMLogEngine::UpdateOnLog(const Tuple &tuple) {
 }
 
 void NVMLogEngine::FlushToDisk() {
-    std::ofstream disk_flush_file(kLogPath, std::ios::app | std::ios::binary);
+    std::cerr << "Flush Started" << std::endl;
+    auto before = std::chrono::high_resolution_clock::now();
+    std::ofstream disk_flush_file(kDiskLogPath, std::ios::app | std::ios::binary);
     if (!disk_flush_file.is_open()) throw std::runtime_error("Coud not open file");
     pmemlog_walk(log_pool_, sizeof(Tuple),
                  [](const void *buf, size_t len, void *arg)->int{
@@ -76,6 +81,10 @@ void NVMLogEngine::FlushToDisk() {
     disk_flush_file.flush();
     pmemlog_rewind(log_pool_);
     current_length_ = 0;
+    auto after = std::chrono::high_resolution_clock::now();
+    std::cerr << "Flush duration: " <<
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                     after - before).count() << std::endl;
 }
 
 
