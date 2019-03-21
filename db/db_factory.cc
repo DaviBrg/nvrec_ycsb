@@ -32,9 +32,9 @@ DB* DBFactory::CreateDB(utils::Properties &props) {
   } else if (props["dbname"] == "nvmrec") {
 return new NVMDB(kNVMRec);
   } else if (props["dbname"] == "nvmlog") {
-return new NVMDB(kNVMRec);
+return new NVMDB(kNVMLog);
   } else if (props["dbname"] == "nvmblk") {
-return new NVMDB(kNVMRec);
+return new NVMDB(kNVMBlk);
   } else return NULL;
 }
 

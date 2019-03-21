@@ -39,6 +39,7 @@ set(HEADERS
   recovery/persistent_list.h
   recovery/nvmlog_engine.h
   recovery/nvmblk_engine.h
+  recovery/os_file.h
 )
 
 set(SOURCES
@@ -51,6 +52,7 @@ set(SOURCES
   recovery/persistent_list.cc
   recovery/nvmlog_engine.cc
   recovery/nvmblk_engine.cc
+  recovery/os_file.cc
   ycsbc.cc
 )
 

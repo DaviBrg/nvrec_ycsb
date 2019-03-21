@@ -7,9 +7,11 @@
 
 #include <iostream>
 
+#include "recovery/os_file.h"
+
 int my_counter = 0;
 
-const std::string kFileName = "log_file.txt";
+const std::string kFileName = "disk_log.txt";
 
 
 namespace fs = std::experimental::filesystem;
@@ -73,19 +75,20 @@ void PersistentList::Dump(pmem::obj::pool<PersistentList> &pool,
                           pmem::obj::persistent_ptr<ListNode> > &lookup_table) {
     auto before = std::chrono::high_resolution_clock::now();
     auto current = head_;
-    std::ofstream out_dump_file_(kFileName.c_str(),
-                                std::ios::app | std::ios::binary);
-    assert(out_dump_file_.is_open());
-    int counter = 0;
+//    std::ofstream out_dump_file_(kFileName.c_str(),
+//                                std::ios::app | std::ios::binary);
+//    assert(out_dump_file_.is_open());
+    OSFile osf{kFileName};
     while (current != nullptr) {
         Tuple current_tuple = current->obj.get_ro();
-        out_dump_file_.write(reinterpret_cast<char*>(&current_tuple),
-                             sizeof(current_tuple));
+        osf.Write(reinterpret_cast<char*>(&current_tuple), sizeof(current_tuple));
+//        out_dump_file_.write(reinterpret_cast<char*>(&current_tuple),
+//                             sizeof(current_tuple));
         current = current->next;
     }
-    out_dump_file_.flush();
+    osf.Sync();
+//    out_dump_file_.flush();
     auto prev = current = head_;
-    counter = 0;
 
     while (current != nullptr) {
         prev = current;

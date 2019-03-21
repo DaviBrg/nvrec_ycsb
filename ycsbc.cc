@@ -11,12 +11,14 @@
 #include <iostream>
 #include <vector>
 #include <future>
+#include <mutex>
+#include <atomic>
+#include <chrono>
 #include "core/utils.h"
 #include "core/timer.h"
 #include "core/client.h"
 #include "core/core_workload.h"
 #include "db/db_factory.h"
-#include <mutex>
 
 using namespace std;
 
@@ -26,6 +28,20 @@ string ParseCommandLine(int argc, const char *argv[], utils::Properties &props);
 
 int DelegateClient(ycsbc::DB *db, ycsbc::CoreWorkload *wl, const int num_ops,
     bool is_loading) {
+
+    std::atomic_ulong ops_in_a_second = 0;
+    std::atomic_bool running = true;
+    std::ofstream stats_file("statistics.txt", std::ios::app);
+    std::thread t;
+    if (!is_loading) {
+        t = std::thread{[&](){
+            while (running) {
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+                auto value = ops_in_a_second.exchange(0);
+                stats_file << value << ",\n";
+            }
+        }};
+    }
   db->Init();
   ycsbc::Client client(*db, *wl);
   int oks = 0;
@@ -34,9 +50,15 @@ int DelegateClient(ycsbc::DB *db, ycsbc::CoreWorkload *wl, const int num_ops,
       oks += client.DoInsert();
     } else {
       oks += client.DoTransaction();
+      ops_in_a_second++;
     }
   }
+  running.store(false);
   db->Close();
+  stats_file.flush();
+  if (t.joinable()) {
+      t.join();
+  }
   return oks;
 }
 
@@ -90,6 +112,7 @@ int main2(const int argc, const char *argv[]) {
   double duration = timer.End();
   cerr << "# Transaction throughput (KTPS)" << endl;
   cerr << props["dbname"] << '\t' << file_name << '\t' << num_threads << '\t';
+  cerr << "Tx exec duration: " << duration << "ms"<< endl;
   cerr << total_ops / duration / 1000 << endl;
 }
 
@@ -180,7 +203,7 @@ inline bool StrStartWith(const char *str, const char *pre) {
   return strncmp(str, pre, strlen(pre)) == 0;
 }
 
-#include <chrono>
+
 
 int main(const int argc, const char *argv[]) {
     int result = 0;

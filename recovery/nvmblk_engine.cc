@@ -4,6 +4,8 @@
 #include <chrono>
 #include <iostream>
 
+#include "recovery/os_file.h"
+
 constexpr const char * const kPMEMLogPath = "/mnt/mem/pmem_blk";
 constexpr const char * const kDiskLogPath = "disk_log.txt";
 constexpr size_t kPoolSize = 200000000;
@@ -85,19 +87,22 @@ RecoveryStatus NVMBlkEngine::UpdateTuple(const Tuple &tuple) {
 
 void NVMBlkEngine::FlushToDisk(){
     auto before = std::chrono::high_resolution_clock::now();
-    std::ofstream disk_flush_file{kDiskLogPath, std::ios::app | std::ios::binary};
-    if (!disk_flush_file.is_open()) {
-        throw std::runtime_error("ERROR: Could not open file");
-    }
+    OSFile osf{kDiskLogPath};
+//    std::ofstream disk_flush_file{kDiskLogPath, std::ios::app | std::ios::binary};
+//    if (!disk_flush_file.is_open()) {
+//        throw std::runtime_error("ERROR: Could not open file");
+//    }
     Tuple current;
     for (size_t block_idx = 0; block_idx < max_num_blocks_; ++block_idx) {
         if (pmemblk_read(blk_pool_,
                          reinterpret_cast<void*>(&current) , block_idx) < 0) {
             throw std::runtime_error("Disk flush failed");
         }
-        disk_flush_file.write(reinterpret_cast<char*>(&current), sizeof(Tuple));
+//        disk_flush_file.write(reinterpret_cast<char*>(&current), sizeof(Tuple));
+        osf.Write(reinterpret_cast<char*>(&current), sizeof(Tuple));
     }
-    disk_flush_file.flush();
+//    disk_flush_file.flush();
+    osf.Sync();
     lookup_table_.clear();
     next_block_ = 0;
     auto after = std::chrono::high_resolution_clock::now();
