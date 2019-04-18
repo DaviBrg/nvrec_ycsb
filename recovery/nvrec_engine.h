@@ -15,8 +15,9 @@ public:
     RecoveryStatus PersistDelete(uint64_t key);
     RecoveryStatus Recover(std::map<std::string, Table> &tables);
 private:
+    RecoveryStatus PersistRaw(const Tuple &value);
+    RecoveryStatus FlushToDisk();
     pmem::obj::pool<PersistentList> pool_;
-    pmem::obj::persistent_ptr<PersistentList> list_;
     std::unordered_map<uint64_t,
     pmem::obj::persistent_ptr<ListNode>> lookup_table_;
 };

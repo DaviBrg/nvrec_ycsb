@@ -70,14 +70,11 @@ RecoveryStatus NVMLogEngine::UpdateOnLog(const Tuple &tuple) {
 }
 
 void NVMLogEngine::FlushToDisk() {
-    std::cerr << "Flush Started" << std::endl;
+    std::cerr << "<FLUSH STARTED>" << std::endl;
     auto before = std::chrono::high_resolution_clock::now();
-//    std::ofstream disk_flush_file(kDiskLogPath, std::ios::app | std::ios::binary);
     OSFile osf{kDiskLogPath};
-//    if (!disk_flush_file.is_open()) throw std::runtime_error("Coud not open file");
     pmemlog_walk(log_pool_, sizeof(Tuple),
                  [](const void *buf, size_t len, void *arg)->int{
-//        std::cerr << "Loop test" << std::endl;
         auto osf = reinterpret_cast<OSFile*>(arg);
         int count  = osf->Write(reinterpret_cast<const char*>(buf), len);
         if (count != len) {
@@ -86,15 +83,13 @@ void NVMLogEngine::FlushToDisk() {
         return 1;
     },
     reinterpret_cast<void*>(&osf));
-//    disk_flush_file.flush();
-//    disk_flush_file.rdbuf()->pubsync();
     osf.Sync();
     pmemlog_rewind(log_pool_);
     current_length_ = 0;
     auto after = std::chrono::high_resolution_clock::now();
-    std::cerr << "Flush duration: " <<
+    std::cerr << "<FLUSH STARTED> DURATION: " <<
             std::chrono::duration_cast<std::chrono::milliseconds>(
-                     after - before).count() << std::endl;
+                     after - before).count() << "ms" << std::endl;
 }
 
 

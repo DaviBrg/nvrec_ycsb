@@ -19,23 +19,28 @@ struct ListNode {
         pmem::obj::p<Tuple> obj;
 };
 
+enum PListStatus {
+    kPersisted,
+    kAllocError
+};
+
 class PersistentList {
 public:
     static pmem::obj::pool<PersistentList> MakePersistentListPool(
             const std::string &pool_path, size_t pool_size,
             const std::string &layout);
-    void Persist(pmem::obj::pool<PersistentList> &pool,
-            const Tuple &value, std::unordered_map<uint64_t,
-            pmem::obj::persistent_ptr<ListNode>> &lookup_table);
-    void Recover(std::map<std::string, Table> &tables,
-                 std::unordered_map<uint64_t,
-                 pmem::obj::persistent_ptr<ListNode>> &lookup_table);
-    void Dump(pmem::obj::pool<PersistentList> &pool, std::unordered_map<uint64_t,
-              pmem::obj::persistent_ptr<ListNode>> &lookup_table);
+//    PListStatus Persist(pmem::obj::pool<PersistentList> &pool,
+//            const Tuple &value, std::unordered_map<uint64_t,
+//            pmem::obj::persistent_ptr<ListNode>> &lookup_table);
+//    void Recover(std::map<std::string, Table> &tables,
+//                 std::unordered_map<uint64_t,
+//                 pmem::obj::persistent_ptr<ListNode>> &lookup_table);
+    pmem::obj::persistent_ptr<ListNode> head() {return head_;}
+    pmem::obj::persistent_ptr<ListNode> tail() {return tail_;}
+    pmem::obj::persistent_ptr<ListNode> Insert(const Tuple &entry);
 private:
     PersistentList();
 
-    pmem::obj::persistent_ptr<ListNode> AddNewEntry(const Tuple &entry);
     pmem::obj::persistent_ptr<ListNode> head_;
     pmem::obj::persistent_ptr<ListNode> tail_;
     std::ifstream in_dump_file_;

@@ -36,7 +36,7 @@ int DelegateClient(ycsbc::DB *db, ycsbc::CoreWorkload *wl, const int num_ops,
     if (!is_loading) {
         t = std::thread{[&](){
             while (running) {
-                std::this_thread::sleep_for(std::chrono::seconds(1));
+                std::this_thread::sleep_for(std::chrono::milliseconds(2500));
                 auto value = ops_in_a_second.exchange(0);
                 stats_file << value << ",\n";
             }
