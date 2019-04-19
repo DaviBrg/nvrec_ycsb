@@ -55,15 +55,29 @@ RecoveryStatus NVRecEngine::PersistRaw(const Tuple &value) {
             }
         });
     } catch (const std::exception &e) {
+        if (flush_result_.valid()) flush_result_.get();
         std::cerr << "<FLUSH STARTED>" << std::endl;
-        return FlushToDisk();
+        flush_result_ = std::async(std::launch::async,
+                                   &NVRecEngine::FlushToDisk,
+                                   this,
+                                   pool_path_,
+                                   std::move(pool_),
+                                   std::move(lookup_table_));
+        pool_ = PersistentList::MakePersistentListPool(NextPoolPath(),
+                                                       kPoolSize, kLayout);
+        lookup_table_.clear();
+        return PersistRaw(value);
     }
     return kSuccess;
 }
 
-RecoveryStatus NVRecEngine::FlushToDisk() {
+RecoveryStatus NVRecEngine::FlushToDisk(std::string pool_path,
+                                        pmem::obj::pool<PersistentList> pool,
+                                        std::unordered_map<uint64_t,
+                                        pmem::obj::persistent_ptr<ListNode>>
+                                        lookup_table) {
     auto before = std::chrono::high_resolution_clock::now();
-    auto current = pool_.get_root()->head();
+    auto current = pool.get_root()->head();
     OSFile osf{kFileName};
     while (current != nullptr) {
         Tuple current_tuple = current->obj.get_ro();
@@ -74,13 +88,15 @@ RecoveryStatus NVRecEngine::FlushToDisk() {
         current = current->next;
     }
     osf.Sync();
-    lookup_table_.clear();
-    pool_.close();
-    if (unlink(kPoolPath) == -1) throw std::runtime_error("Cannot delete pool file");
-    pool_ = PersistentList::MakePersistentListPool(kPoolPath, kPoolSize, kLayout);
+    lookup_table.clear();
+    pool.close();
+    if (unlink(pool_path.c_str()) == -1) throw std::runtime_error("Cannot delete pool file");
     auto after = std::chrono::high_resolution_clock::now();
     std::cerr << "<FLUSH FINISHED> DURARION: " <<
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                     after - before).count() << "ms" << std::endl;
+                 std::chrono::duration_cast<std::chrono::milliseconds>( after - before).count() << "ms" << std::endl;
     return kSuccess;
+}
+
+std::string NVRecEngine::NextPoolPath() {
+    return pool_path_ + std::to_string(++pool_counter_);
 }

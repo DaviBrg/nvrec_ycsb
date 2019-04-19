@@ -209,9 +209,9 @@ int main(const int argc, const char *argv[]) {
     int result = 0;
     uint64_t i = 0;
     auto before = chrono::high_resolution_clock::now();
+    std::mutex mutex;
     result = main2(argc, argv);
 
-    std::mutex mutex;
 
     {
         std::lock_guard lk{mutex};
