@@ -57,10 +57,14 @@ RecoveryStatus NVRecEngine::PersistRaw(const Tuple &value) {
     } catch (const std::exception &e) {
         if (flush_result_.valid()) flush_result_.get();
         std::cerr << "<FLUSH STARTED>" << std::endl;
+        auto current_pool_path = [this](){
+            if (pool_counter_ == 0) return pool_path_;
+            else return pool_path_ + std::to_string(pool_counter_);
+        }();
         flush_result_ = std::async(std::launch::async,
                                    &NVRecEngine::FlushToDisk,
                                    this,
-                                   pool_path_,
+                                   current_pool_path,
                                    std::move(pool_),
                                    std::move(lookup_table_));
         pool_ = PersistentList::MakePersistentListPool(NextPoolPath(),
@@ -90,7 +94,7 @@ RecoveryStatus NVRecEngine::FlushToDisk(std::string pool_path,
     osf.Sync();
     lookup_table.clear();
     pool.close();
-    if (unlink(pool_path.c_str()) == -1) throw std::runtime_error("Cannot delete pool file");
+    if (unlink(pool_path.c_str()) == -1) throw std::runtime_error("Cannot delete pool file: " + std::string{strerror(errno)} + "\n File name: " + pool_path );
     auto after = std::chrono::high_resolution_clock::now();
     std::cerr << "<FLUSH FINISHED> DURARION: " <<
                  std::chrono::duration_cast<std::chrono::milliseconds>( after - before).count() << "ms" << std::endl;
