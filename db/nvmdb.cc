@@ -145,6 +145,3 @@ std::vector<DB::KVPair> NVMDB::FilterByFields(
 
     return result;
 }
-
-
-

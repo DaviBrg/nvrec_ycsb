@@ -13,7 +13,8 @@ constexpr const char * const kPoolPath = "/mnt/mem/pmem";
 constexpr const char * const kLayout = "linked_list";
 constexpr const char * const kFileName = "disk_log.txt";
 
-constexpr const size_t kPoolSize = 200000000;
+//constexpr const size_t kPoolSize = 250000000;
+constexpr const size_t kPoolSize = 62500000;
 
 NVRecEngine::NVRecEngine() :
     pool_(PersistentList::MakePersistentListPool(kPoolPath,
@@ -61,6 +62,7 @@ RecoveryStatus NVRecEngine::PersistRaw(const Tuple &value) {
             if (pool_counter_ == 0) return pool_path_;
             else return pool_path_ + std::to_string(pool_counter_);
         }();
+
         flush_result_ = std::async(std::launch::async,
                                    &NVRecEngine::FlushToDisk,
                                    this,
@@ -81,6 +83,7 @@ RecoveryStatus NVRecEngine::FlushToDisk(std::string pool_path,
                                         pmem::obj::persistent_ptr<ListNode>>
                                         lookup_table) {
     auto before = std::chrono::high_resolution_clock::now();
+    lookup_table.clear();
     auto current = pool.get_root()->head();
     OSFile osf{kFileName};
     while (current != nullptr) {
@@ -92,7 +95,6 @@ RecoveryStatus NVRecEngine::FlushToDisk(std::string pool_path,
         current = current->next;
     }
     osf.Sync();
-    lookup_table.clear();
     pool.close();
     if (unlink(pool_path.c_str()) == -1) throw std::runtime_error("Cannot delete pool file: " + std::string{strerror(errno)} + "\n File name: " + pool_path );
     auto after = std::chrono::high_resolution_clock::now();

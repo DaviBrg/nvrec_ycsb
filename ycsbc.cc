@@ -22,12 +22,16 @@
 
 using namespace std;
 
+constexpr const size_t kExperimentDuration = 150;
+
+constexpr const size_t kSamplingInterval = 1000;
+
 void UsageMessage(const char *command);
 bool StrStartWith(const char *str, const char *pre);
 string ParseCommandLine(int argc, const char *argv[], utils::Properties &props);
 
 int DelegateClient(ycsbc::DB *db, ycsbc::CoreWorkload *wl, const int num_ops,
-    bool is_loading) {
+    bool is_loading, bool is_timed, size_t exec_time) {
 
     std::atomic_ulong ops_in_a_second = 0;
     std::atomic_bool running = true;
@@ -36,7 +40,7 @@ int DelegateClient(ycsbc::DB *db, ycsbc::CoreWorkload *wl, const int num_ops,
     if (!is_loading) {
         t = std::thread{[&](){
             while (running) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+                std::this_thread::sleep_for(std::chrono::milliseconds(kSamplingInterval));
                 auto value = ops_in_a_second.exchange(0);
                 stats_file << value << ",\n";
             }
@@ -49,9 +53,24 @@ int DelegateClient(ycsbc::DB *db, ycsbc::CoreWorkload *wl, const int num_ops,
     if (is_loading) {
       oks += client.DoInsert();
     } else {
+      if (!is_loading && is_timed) break;
       oks += client.DoTransaction();
       ops_in_a_second++;
     }
+  }
+  oks = 0;
+  if (!is_loading && is_timed) {
+    auto before = chrono::high_resolution_clock::now();
+    auto after = before;
+    auto diff = std::chrono::duration_cast<std::chrono::seconds>(
+                after - before).count();
+    do {
+      oks += client.DoTransaction();
+      ops_in_a_second++;
+      after = chrono::high_resolution_clock::now();
+      diff = std::chrono::duration_cast<std::chrono::seconds>(
+                    after - before).count();
+    } while (diff <= exec_time);
   }
   running.store(false);
   db->Close();
@@ -82,7 +101,7 @@ int main2(const int argc, const char *argv[]) {
   int total_ops = stoi(props[ycsbc::CoreWorkload::RECORD_COUNT_PROPERTY]);
   for (int i = 0; i < num_threads; ++i) {
     actual_ops.emplace_back(async(launch::async,
-        DelegateClient, db, &wl, total_ops / num_threads, true));
+        DelegateClient, db, &wl, total_ops / num_threads, true, false, 0));
   }
   assert((int)actual_ops.size() == num_threads);
 
@@ -100,7 +119,7 @@ int main2(const int argc, const char *argv[]) {
   timer.Start();
   for (int i = 0; i < num_threads; ++i) {
     actual_ops.emplace_back(async(launch::async,
-        DelegateClient, db, &wl, total_ops / num_threads, false));
+        DelegateClient, db, &wl, total_ops / num_threads, false, true, kExperimentDuration));
   }
   assert((int)actual_ops.size() == num_threads);
 

@@ -8,7 +8,8 @@
 
 constexpr const char * const kPMEMLogPath = "/mnt/mem/pmem_log";
 constexpr const char * const kDiskLogPath = "disk_log.txt";
-constexpr size_t kLogSize = 200000000;
+//constexpr size_t kLogSize = 2000000000;
+constexpr size_t kLogSize = 125000000;
 
 NVMLogEngine::NVMLogEngine(PMEMlogpool *log_pool, size_t available_bytes) :
     log_pool_(log_pool),
