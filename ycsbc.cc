@@ -22,6 +22,8 @@
 
 using namespace std;
 
+using namespace ycsbc;
+
 constexpr const size_t kExperimentDuration = 150;
 
 constexpr const size_t kSamplingInterval = 1000;
@@ -48,10 +50,14 @@ int DelegateClient(ycsbc::DB *db, ycsbc::CoreWorkload *wl, const int num_ops,
     }
   db->Init();
   ycsbc::Client client(*db, *wl);
+
   int oks = 0;
   for (int i = 0; i < num_ops; ++i) {
     if (is_loading) {
-      oks += client.DoInsert();
+      string s = "";
+      oks += client.DoInsert(s);
+
+
     } else {
       if (!is_loading && is_timed) break;
       oks += client.DoTransaction();

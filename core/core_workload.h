@@ -149,7 +149,7 @@ class CoreWorkload {
   virtual std::string NextFieldName();
   virtual size_t NextScanLength() { return scan_len_chooser_->Next(); }
   
-  bool read_all_fields() const { return read_all_fields_; }
+  bool read_all_fields() const { return true; }//read_all_fields_; }
   bool write_all_fields() const { return write_all_fields_; }
 
   CoreWorkload() :

@@ -39,6 +39,10 @@ int OSFile::Write(const char *data, size_t size) {
     return write(fd_, data, size);
 }
 
+int OSFile::Read(char *data, size_t size) {
+    return read(fd_, data, size);
+}
+
 int OSFile::Sync() {
     fsync(fd_);
 }

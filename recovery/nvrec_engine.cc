@@ -40,8 +40,35 @@ RecoveryStatus NVRecEngine::PersistDelete(uint64_t key) {
 }
 
 RecoveryStatus NVRecEngine::Recover(std::map<std::string, Table> &tables) {
-//    list_->Recover(tables, lookup_table_);
-    return kSuccess;
+        OSFile osf{kFileName};
+        auto current = pool_.get_root()->head();
+        Tuple t = current->obj.get_ro();
+        std::ostringstream o;
+        while(osf.Read(reinterpret_cast<char*>(&t),
+                       sizeof(t)) == sizeof(t)){
+            o << t.key;
+            const std::string str = o.str();
+            std::vector<KVPair> fields = RawToDB(t);
+            tables["usertable"][str] = fields;
+
+        }
+
+        current = pool_.get_root()->head();
+        while (current != nullptr) {
+            Tuple current_tuple = current->obj.get_ro();
+            o << current_tuple.key;
+            const std::string str = o.str();
+            std::vector<KVPair> fields = RawToDB(current_tuple);
+            //if(conjunto.find(str) == conjunto.end()){
+            tables["usertable"][str] = fields;
+
+
+
+            current = current->next;
+        }
+        //pool_.close();
+        return kSuccess;
+
 }
 
 RecoveryStatus NVRecEngine::PersistRaw(const Tuple &value) {

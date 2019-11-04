@@ -56,34 +56,34 @@ set(SOURCES
   ycsbc.cc
 )
 
-set (ET_HEADERS
-  recovery/recovery_engine.h
-  recovery/nvrec_engine.h
-  recovery/recovery_defs.h
-  recovery/persistent_list.h
-  recovery/nvmlog_engine.h
-  recovery/nvmblk_engine.h
-  recovery/os_file.h
-  recovery/eternal.h
-  )
+#set (ET_HEADERS
+#  recovery/recovery_engine.h
+#  recovery/nvrec_engine.h
+#  recovery/recovery_defs.h
+#  recovery/persistent_list.h
+#  recovery/nvmlog_engine.h
+#  recovery/nvmblk_engine.h
+#  recovery/os_file.h
+#  recovery/eternal.h
+#  )
 
-set (ET_SOURCES
-  recovery/nvrec_engine.cc
-  recovery/recovery_defs.cc
-  recovery/persistent_list.cc
-  recovery/nvmlog_engine.cc
-  recovery/nvmblk_engine.cc
-  recovery/os_file.cc
-  recovery/eternal.cc
-  )
+#set (ET_SOURCES
+#  recovery/nvrec_engine.cc
+#  recovery/recovery_defs.cc
+#  recovery/persistent_list.cc
+#  recovery/nvmlog_engine.cc
+#  recovery/nvmblk_engine.cc
+#  recovery/os_file.cc
+#  recovery/eternal.cc
+#  )
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 target_link_libraries(${PROJECT_NAME} -lpthread -ltbb -lpmemobj -lpmemlog -lpmemblk -lstdc++fs)
 
-add_library(eternal STATIC ${ET_SOURCES} ${ET_HEADERS})
+#add_library(eternal STATIC ${ET_SOURCES} ${ET_HEADERS})
 
-target_link_libraries(eternal -lpmemobj -lpmemlog -lpmemblk -lstdc++fs)
+#target_link_libraries(eternal -lpmemobj -lpmemlog -lpmemblk -lstdc++fs)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
   COMMAND "${CMAKE_COMMAND}" -E copy
@@ -96,7 +96,7 @@ target_include_directories(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}
 )
 
-target_include_directories(eternal
-    PRIVATE
-        ${PROJECT_SOURCE_DIR}
-)
+#target_include_directories(eternal
+#    PRIVATE
+#        ${PROJECT_SOURCE_DIR}
+#)

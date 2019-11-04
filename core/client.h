@@ -20,11 +20,12 @@ class Client {
  public:
   Client(DB &db, CoreWorkload &wl) : db_(db), workload_(wl) { }
   
-  virtual bool DoInsert();
+  virtual bool DoInsert(std::string &str);
   virtual bool DoTransaction();
-  
+
   virtual ~Client() { }
-  
+  DB &db_;
+
  protected:
   
   virtual int TransactionRead();
@@ -33,12 +34,12 @@ class Client {
   virtual int TransactionUpdate();
   virtual int TransactionInsert();
   
-  DB &db_;
   CoreWorkload &workload_;
 };
 
-inline bool Client::DoInsert() {
+inline bool Client::DoInsert(std::string &str) {
   std::string key = workload_.NextSequenceKey();
+  str = key;
   std::vector<DB::KVPair> pairs;
   workload_.BuildValues(pairs);
   return (db_.Insert(workload_.NextTable(), key, pairs) == DB::kOK);

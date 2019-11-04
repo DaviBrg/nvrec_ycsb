@@ -60,6 +60,7 @@ public:
     ///
     int Update(const std::string &table, const std::string &key,
                        std::vector<KVPair> &values);
+
     ///
     /// Inserts a record into the database.
     /// Field/value pairs in the specified vector are written into the record.

@@ -1,7 +1,7 @@
 #include "db/nvmdb.h"
 
 #include <algorithm>
-
+#include <iostream>
 #include "recovery/nvmblk_engine.h"
 #include "recovery/nvmlog_engine.h"
 #include "recovery/nvrec_engine.h"
@@ -9,6 +9,8 @@
 using namespace ycsbc;
 
 using Tables = std::map<std::string, NVMDB::Table>;
+
+using namespace std;
 
 NVMDB::NVMDB(kNVMDBType type) {
     switch (type) {
@@ -25,7 +27,11 @@ NVMDB::NVMDB(kNVMDBType type) {
         throw std::runtime_error("Unknown NVM database");
         break;
     }
-    if (nullptr == rec_engine_) throw std::runtime_error("NVMDB intance error");
+    if (nullptr == rec_engine_) throw std::runtime_error("NVMDB instance error");
+    /*rec_engine_->Recover(tables_);
+    std::vector<DB::KVPair> result;
+    Read("usertable", "8458488093983038188",NULL, result);
+    cout << "Tuple check: First: " << result.at(0).first << " Second: " << result.at(0).second << endl;*/
 }
 
 auto NVMDB::FindByTableKey(const std::string &table, const std::string &key) {

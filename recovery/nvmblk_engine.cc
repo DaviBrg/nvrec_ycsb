@@ -1,8 +1,10 @@
 #include "recovery/nvmblk_engine.h"
 
+
 #include <fstream>
 #include <chrono>
 #include <iostream>
+#include <sstream>
 
 #include "recovery/os_file.h"
 
@@ -111,7 +113,24 @@ void NVMBlkEngine::FlushToDisk(){
                      after - before).count() << std::endl;
 }
 
-RecoveryStatus NVMBlkEngine::Recover(std::map<std::__cxx11::string,
-                                     Table> &tables) {
-    return kFail;
+RecoveryStatus NVMBlkEngine::Recover(std::map<std::string, Table> &tables) {
+    Tuple current;
+    //std::unordered_set<std::string> conjunto;
+    for (size_t block_idx = 0; block_idx < max_num_blocks_; ++block_idx) {
+        if (pmemblk_read(blk_pool_,
+                         reinterpret_cast<void*>(&current) , block_idx) < 0) {
+                return kFail;
+        }
+        std::ostringstream o;
+        o << current.key;
+        const std::string str = o.str();
+        std::vector<KVPair> fields = RawToDB(current);
+        //if(conjunto.find(str) == conjunto.end()){
+        tables["usertable"][str] = fields;
+        //    db.Insert("usertable", str, fields);
+        //    conjunto.insert(str);
+        //}
+
+    }
+
 }

@@ -8,6 +8,7 @@
 #include "recovery/recovery_engine.h"
 
 
+
 class NVMBlkEngine : RecoveryEngine{
 public:
     ~NVMBlkEngine();
@@ -20,6 +21,7 @@ public:
                                  const std::vector<KVPair>& values);
     RecoveryStatus PersistDelete(uint64_t key);
     RecoveryStatus Recover(std::map<std::string, Table> &tables);
+    //RecoveryStatus Recover(ycsbc::NVMDB db);
 private:
     NVMBlkEngine(PMEMblkpool *blk_pool, size_t max_num_blocks);
     RecoveryStatus UpdateOnNewBlk(const Tuple &tuple);

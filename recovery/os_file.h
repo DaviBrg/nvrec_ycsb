@@ -14,7 +14,7 @@ public:
     OSFile& operator=(OSFile &&other);
 
     int Write(const char *data, size_t size);
-
+    int Read(char *data, size_t size);
     int Sync();
 
 
